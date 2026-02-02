@@ -4,7 +4,7 @@
  */
 import { _converse, api, converse, RosterFilter } from '@converse/headless';
 import RosterContactView from './contactview.js';
-import { clearXMPPProvidersCache, highlightRosterItem } from './utils.js';
+import { clearXMPPProvidersCache, highlightRosterItem, routeToQueryAction } from './utils.js';
 import '../modal/index.js';
 import AddContactModal from './modals/add-contact.js';
 import AcceptContactRequestModal from './modals/accept-contact-request.js';

@@ -3,9 +3,10 @@
  * @license Mozilla Public License (MPLv2)
  */
 import { _converse, api, converse } from '@converse/headless';
+import log from '@converse/log';
 import './view.js';
 import ChatBoxViews from './container.js';
-import { calculateViewportHeightUnit } from './utils.js';
+import { calculateViewportHeightUnit, routeToQueryAction } from './utils.js';
 
 import './styles/chats.scss';
 
@@ -35,6 +36,16 @@ converse.plugins.add('converse-chatboxviews', {
         api.listen.on('cleanup', () => delete _converse.state.chatboxviews);
         api.listen.on('clearSession', () => chatboxviews.closeAllChatBoxes());
         api.listen.on('chatBoxViewsInitialized', calculateViewportHeightUnit);
+        
+        // Handle XEP-0147 query actions for chatboxes
+        api.listen.on('xmppURIAction', ({ jid, query_params, action }) => {
+            // Handle actions that apply to chatboxes (both 1:1 and MUC)
+            if (action === 'message' || !action) {
+                routeToQueryAction(jid, action, query_params).catch((err) => {
+                    log.error('routeToQueryAction (chatboxviews) failed', err);
+                });
+            }
+        });
 
         window.addEventListener('resize', calculateViewportHeightUnit);
         /************************ END Event Handlers ************************/

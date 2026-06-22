@@ -490,3 +490,61 @@ Object.assign(u, {
         getNamesAutoCompleteList,
     },
 });
+
+/**
+ * Handle XEP-0147 "query actions" for roster management.
+ * This function is called by the chatview plugin's routeToQueryAction.
+ * Handles:
+ *   - roster: adds or edits a contact in the roster
+ *
+ * @param {string} jid - The JID to add to the roster
+ * @param {URLSearchParams} query_params - Query parameters from the URI
+ */
+export async function routeToQueryAction(jid, action, query_params) {
+    if (action === 'roster') {
+        await handleRosterAction(jid, query_params);
+    } else {
+        log.debug(`routeToQueryAction (rosterview): Action "${action}" not handled`);
+    }
+}
+
+/**
+ * Handles the `roster` querytype.
+ * Adds a contact to the roster with optional name and group.
+ *
+ * @param {string} jid - The JID of the contact to add
+ * @param {URLSearchParams} params - Query parameters including 'name' and 'group'
+ */
+async function handleRosterAction(jid, params) {
+    const name = params.get('name') || jid.split('@')[0];
+    const group = params.get('group');
+    const groups = group ? [group] : [];
+
+    try {
+        // Check if user is connected before attempting to add contact
+        if (!api.connection.connected()) {
+            api.alert('warning', __('Not connected'),
+                [__('Please login first before adding contacts to your roster.')]);
+            return;
+        }
+
+        const result = await api.confirm(
+            __('Confirm'),
+            __('Are you sure you want to add %1$s to your roster?', jid)
+        );
+        if (!result) {
+            return;
+        }
+
+        await api.contacts.add(
+            { jid, name, groups },
+            true,   // persist on server
+            true,   // subscribe to presence
+            ''      // no custom message
+        );
+    } catch (err) {
+        log.error(err);
+        api.alert('error', __('Error'),
+            [__('Failed to add %1$s to your roster', jid)]);
+    }
+}

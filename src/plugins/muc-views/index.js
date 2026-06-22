@@ -3,7 +3,7 @@
  * @description XEP-0045 Multi-User Chat Views
  * @license Mozilla Public License (MPLv2)
  */
-import {api, converse, constants} from '@converse/headless';
+import {api, converse, constants, log} from '@converse/headless';
 import '../chatboxviews/index.js';
 import './affiliation-form.js';
 import './role-form.js';
@@ -85,5 +85,16 @@ converse.plugins.add('converse-muc-views', {
 
         api.listen.on('parseMessageForCommands', parseMessageForMUCCommands);
         api.listen.on('confirmDirectMUCInvitation', confirmDirectMUCInvitation);
+
+        api.listen.on('xmppURIAction', ({ jid, query_params, action }) => {
+            if (action !== 'join') {
+                return;
+            }
+            const nick = query_params?.get('nick')?.trim();
+            const attrs = nick ? { nick } : {};
+            api.rooms.open(jid, attrs, true).catch((err) => {
+                log.error('routeToQueryAction (muc-views) failed', err);
+            });
+        });
     }
 });

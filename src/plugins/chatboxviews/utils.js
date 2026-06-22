@@ -20,7 +20,6 @@ export async function routeToQueryAction(jid, action, query_params) {
 
     if (!action) {
         // No action specified, just open the chat
-        log.debug(`routeToQueryAction (chatboxviews): Opening chat for "${jid}"`);
         return api.chats.open(jid);
     }
 

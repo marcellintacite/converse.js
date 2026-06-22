@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add canonical support for XEP-0147 XMPP URI query actions (`message`, `roster`, `join`) including URI routing, roster confirmation flow, and query-action test coverage.
+
 ## 14.0.0-beta.4 (2026-06-22)
 
 - Bump libomemo.js to version 2.0.2
